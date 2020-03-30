@@ -1,6 +1,6 @@
 # mysql-history
 
-History database tables generation for Node.js and MySQL.
+Historical database registry system for Node.js and MySQL databases
 
 ## Installation
 
@@ -60,10 +60,12 @@ const history = require("mysql-history").create({
 });
 
 const execution = async function() {
-	await history.initialize(); // generates the schema, prepares templates
+	await history.initialize(); // generates the schema, prepares templates and others
+	await history.createTables(); // creates the database history tables
 	await history.save("db1", "my_table", [{value:1},{value:2},{value:3}]);
 	await history.save("db1", "my_table", [{value:4},{value:5},{value:6}]);
 	await history.save("db1", "my_table", [{value:7},{value:8},{value:9}]);
+	await history.deleteTables(); // deletes the database history tables
 };
 
 module.exports = execution();

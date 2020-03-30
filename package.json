@@ -1,7 +1,7 @@
 {
   "name": "mysql-history",
   "version": "0.0.1",
-  "description": "Database history for MySQL databases made easy.",
+  "description": "Historical database registry system for Node.js and MySQL databases.",
   "main": "src/index.js",
   "bin": {
     "mysql-history": "bin/mysql-history"

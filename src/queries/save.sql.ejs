@@ -1,0 +1,32 @@
+<%
+if(!(insertIntoSchema in mysqlHistory.historySchemas)) {
+	throw new Error("Property <insertIntoSchema> must exist in <mysqlHistory.historySchemas>");
+}
+const historySchema = mysqlHistory.historySchemas[insertIntoSchema];
+if(!(insertIntoTable in historySchema.columns)) {
+	throw new Error("Property <insertIntoTable> must exist in <mysqlHistory.historySchema[schema].columns");
+}
+const table = historySchema.columns[insertIntoTable];
+const columns = Object.keys(table);
+const historyTableName = Utils.getHistoryTableName(insertIntoSchema, insertIntoTable);
+%>
+INSERT INTO <%-SQL.escapeId(historyTableName)%> (<%
+	columns.forEach((column, indexColumns) => {
+	%>
+	<%-SQL.escapeId(column)%><%-columns.length === (indexColumns+1)?"":","%><%
+	});
+%>) VALUES 
+<%
+const allItems = [].concat(insertItems);
+allItems.forEach((item, indexItems) => {
+	%>(<%
+		columns.forEach((column, indexColumns) => {
+			if(column in item) {
+				%><%-SQL.escape(item[column])%><%-columns.length === (indexColumns+1)?"":","%><%
+			} else {
+				%>null<%-columns.length === (indexColumns+1)?"":","%><%
+			}
+		});
+	%>)<%-allItems.length === (indexItems+1)?"":","%><%
+});
+%>

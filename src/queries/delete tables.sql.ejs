@@ -1,0 +1,26 @@
+<%
+if(typeof mysqlHistory.historySchemas !== "object") {
+	throw new Error("Property <historySchemas> must be an array.");
+}
+if(Object.keys(mysqlHistory.historySchemas).length === 0) {
+	throw new Error("Property <historySchemas> must contain one item at least.");
+}
+Object.keys(mysqlHistory.historySchemas).forEach(schemaName => {
+	const schema = mysqlHistory.historySchemas[schemaName];
+	if(typeof schema !== "object") {
+		throw new Error("Property <historySchemas[schema]> must be an object");
+	}
+	const tables = Object.keys(schema.columns);
+	if(!tables.length) {
+		throw new Error("Property <historySchemas[schema].columns> must have more than 1 item");
+	}
+	tables.forEach(table => {
+		if(table.startsWith("$hist$")) {
+			return;
+		}
+		const historyTableName = Utils.getHistoryTableName(schemaName, table);
+%>
+DROP TABLE IF EXISTS `<%-historyTableName%>`;<%
+	});
+});
+%>

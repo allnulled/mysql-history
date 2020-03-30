@@ -1,0 +1,158 @@
+#!/usr/bin/env node
+
+const pkg = require(__dirname + "/../package.json");
+const args = require("yargs")
+	.version(pkg.version)
+	.option("command", {
+		type: "string",
+		default: undefined,
+		describe: "create or drop (tables)",
+	})
+	.option("schema-generation", {
+		type: "boolean",
+		default: false,
+		describe: "create schema file too",
+	})
+	.option("schema-user", {
+		type: "string",
+		default: undefined,
+		describe: "db user",
+	})
+	.option("schema-password", {
+		type: "string",
+		default: undefined,
+		describe: "db user password",
+	})
+	.option("schema-host", {
+		type: "string",
+		default: undefined,
+		describe: "db host",
+	})
+	.option("schema-port", {
+		type: "string",
+		default: undefined,
+		describe: "db host",
+	})
+	.option("schema-database", {
+		type: "string",
+		default: undefined,
+		describe: "db name",
+	})
+	.option("schema-as-json", {
+		type: "boolean",
+		default: undefined,
+		describe: "output json, no js",
+	})
+	.option("schema-output", {
+		type: "string",
+		default: undefined,
+		describe: "output file",
+	})
+	.option("schema-configurations", {
+		type: "string",
+		default: undefined,
+		describe: "config file (overrides)",
+	})
+	.option("schema-extensions", {
+		type: "string",
+		default: undefined,
+		describe: "extensions file",
+	})
+	.option("schema-debug", {
+		type: "boolean",
+		default: false,
+		describe: "debug mysql-schema",
+	})
+	.option("history-schema", {
+		type: "array",
+		default: [],
+		describe: "files of type 'mysql-schema.js'",
+	})
+	.option("history-user", {
+		type: "string",
+		default: undefined,
+		describe: "db user",
+	})
+	.option("history-password", {
+		type: "string",
+		default: undefined,
+		describe: "db user password",
+	})
+	.option("history-host", {
+		type: "string",
+		default: undefined,
+		describe: "db host",
+	})
+	.option("history-port", {
+		type: "string",
+		default: undefined,
+		describe: "db host",
+	})
+	.option("history-database", {
+		type: "string",
+		default: undefined,
+		describe: "db name",
+	})
+	.option("history-debug", {
+		type: "boolean",
+		default: false,
+		describe: "debug mysql-history",
+	})
+	.argv;
+
+const mixed = {
+	schema: {},
+	history: {}
+};
+
+const fixName = prop => {
+	return prop.replace(/\-[a-z]/g, match => {
+		return match.substr(1).toUpperCase();
+	})
+};
+
+Object.keys(args).forEach(prop => {
+	if (prop.startsWith("schema-")) {
+		const newName = fixName(prop.replace("schema-", ""));
+		mixed.schema[newName] = args[prop];
+	} else if (prop.startsWith("history-")) {
+		const newName = fixName(prop.replace("history-", ""));
+		mixed.history[newName] = args[prop];
+	}
+});
+
+const MySQLHistory = require(__dirname + "/../" + pkg.main);
+const mysqlHistory = MySQLHistory.create(mixed);
+const command = args.command;
+
+
+if (command === "create") {
+	mysqlHistory.initialize().then(ok => {
+		mysqlHistory.createTables().then(ok => {
+			console.log("[mysql-history] ★ History tables has been created successfully.");
+			mysqlHistory.connection.end();
+		}).catch(error => {
+			console.log("Error creating tables:", error);
+			mysqlHistory.connection.end();
+		});
+	}).catch(error => {
+		console.log("Error creating tables:", error);
+		mysqlHistory.connection.end();
+	});
+} else if (command === "delete") {
+	mysqlHistory.initialize().then(ok => {
+		mysqlHistory.deleteTables().then(ok => {
+			console.log("[mysql-history] ★ History tables has been deleted successfully.");
+			mysqlHistory.connection.end();
+		}).catch(error => {
+			console.log("Error deleting tables:", error);
+			mysqlHistory.connection.end();
+		});
+	}).catch(error => {
+		console.log("Error deleting tables:", error);
+		mysqlHistory.connection.end();
+	});
+} else {
+	console.log(command);
+	throw new Error("Property <command> must be one of: " + ["create", "delete"].join(" | "));
+}

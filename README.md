@@ -60,8 +60,7 @@ const history = require("mysql-history").create({
 });
 
 const execution = async function() {
-	await history.initialize(); // generates the schema, prepares templates and database connection
-	await history.createTables(); // creates the history tables
+	await history.initialize(); // generates the schema, prepares templates
 	await history.save("db1", "my_table", [{value:1},{value:2},{value:3}]);
 	await history.save("db1", "my_table", [{value:4},{value:5},{value:6}]);
 	await history.save("db1", "my_table", [{value:7},{value:8},{value:9}]);
@@ -69,6 +68,9 @@ const execution = async function() {
 
 module.exports = execution();
 ```
+
+## API Reference
+
 
 
 
